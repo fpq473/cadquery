@@ -11,6 +11,7 @@ from typing import (
     overload,
     TypeVar,
     cast as tcast,
+    runtime_checkable,
 )
 from typing_extensions import Literal, Protocol
 
@@ -2779,6 +2780,22 @@ class Solid(Shape, Mixin3D):
 
     wrapped: TopoDS_Solid
 
+    @overload
+    def __init__(self, obj: "SolidLike"):
+        ...
+
+    @overload
+    def __init__(self, obj: TopoDS_Shape):
+        ...
+
+    def __init__(self, obj):
+        if isinstance(obj, SolidLike):
+            obj = obj.__cadquery_solid__().wrapped
+        super().__init__(obj)
+
+    def __cadquery_solid__(self: T) -> T:
+        return self
+
     @classmethod
     @deprecate()
     def interpPlate(
@@ -3642,3 +3659,9 @@ def edgesToWires(edges: Iterable[Edge], tol: float = 1e-6) -> List[Wire]:
     ShapeAnalysis_FreeBounds.ConnectEdgesToWires_s(edges_in, tol, False, wires_out)
 
     return [Wire(el) for el in wires_out]
+
+
+@runtime_checkable
+class  SolidLike(Protocol):
+    def __cadquery_solid__(self) -> Solid:
+        ...

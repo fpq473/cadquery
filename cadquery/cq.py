@@ -45,6 +45,7 @@ from .occ_impl.shapes import (
     Wire,
     Face,
     Solid,
+    SolidLike,
     Compound,
     wiresToFaces,
 )
@@ -3275,7 +3276,7 @@ class Workplane(object):
 
     def union(
         self: T,
-        toUnion: Optional[Union["Workplane", Solid, Compound]] = None,
+        toUnion: Optional[Union["Workplane", SolidLike, Compound]] = None,
         clean: bool = True,
         glue: bool = False,
         tol: Optional[float] = None,
@@ -3304,6 +3305,8 @@ class Workplane(object):
             self._mergeTags(toUnion)
         elif isinstance(toUnion, (Solid, Compound)):
             newS = [toUnion]
+        elif isinstance(toUnion, SolidLike):
+            newS = [Solid(toUnion)]
         else:
             raise ValueError("Cannot union type '{}'".format(type(toUnion)))
 
